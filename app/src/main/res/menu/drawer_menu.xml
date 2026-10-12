@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_form"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:title="Form Pendaftaran" />
+        <item
+            android:id="@+id/nav_riwayat"
+            android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="Riwayat Pendaftaran" />
+        <item
+            android:id="@+id/nav_feedback"
+            android:icon="@android:drawable/btn_star"
+            android:title="Review &amp; Feedback" />
+    </group>
+</menu>

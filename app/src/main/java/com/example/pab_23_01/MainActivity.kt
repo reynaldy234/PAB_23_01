@@ -9,45 +9,108 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.Switch
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.navigation.NavigationView
 
-class MainActivity : AppCompatActivity(){
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
+    private lateinit var toolbar: MaterialToolbar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var edtNama = findViewById<EditText>(R.id.edtNama)
-        var rgJK = findViewById<RadioGroup>(R.id.rgJK)
-        var spKota = findViewById<Spinner>(R.id.spKota)
-        var swMenyetujui = findViewById<Switch>(R.id.swMenyetujui)
-        var btnSimpan = findViewById<Button>(R.id.btn_submit)
+        drawerLayout = findViewById(R.id.drawerLayout)
+        navigationView = findViewById(R.id.navigationView)
+        toolbar = findViewById(R.id.toolbar)
 
-        var kota = arrayOf("Pilih Kota", "Jakarta", "Bandung", "Surabaya", "Padang")
-        var adapter = ArrayAdapter(this,
-            android.R.layout.simple_spinner_dropdown_item, kota)
+        // Setup ActionBarDrawerToggle for strip 3 / hamburger topbar button
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.app_name,
+            R.string.app_name
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        navigationView.setCheckedItem(R.id.nav_form)
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_form -> {
+                    drawerLayout.closeDrawers()
+                }
+                R.id.nav_riwayat -> {
+                    val intent = Intent(this, RiwayatActivity::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_feedback -> {
+                    val intent = Intent(this, FeedbackActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+            drawerLayout.closeDrawers()
+            true
+        }
+
+        val edtNama = findViewById<EditText>(R.id.edtNama)
+        val rgJk = findViewById<RadioGroup>(R.id.rgJk)
+        val spKota = findViewById<Spinner>(R.id.spKota)
+        val swMenyetujui = findViewById<Switch>(R.id.swMenyetujui)
+        val btnSimpan = findViewById<Button>(R.id.btn_simpan)
+
+        val kota = arrayOf("Pilih Kota", "Jakarta", "Bandung", "Surabaya", "Padang")
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item, kota
+        )
         spKota.adapter = adapter
 
         btnSimpan.setOnClickListener {
-            if (edtNama.text.toString().trim().isEmpty()) {
-                Toast.makeText(this, "Nama Tidak Boleh Kosong!!!",
-                    Toast.LENGTH_SHORT).show()
+            val nama = edtNama.text.toString().trim()
+            if (nama.isEmpty()) {
+                Toast.makeText(
+                    this, "Nama Tidak Boleh Kosong!!!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
-            if (! swMenyetujui.isChecked){
-                Toast.makeText(this, "Anda Harus Menyetujui S&K",
-                    Toast.LENGTH_SHORT).show()
-
+            if (!swMenyetujui.isChecked) {
+                Toast.makeText(
+                    this, "Anda Harus Menyetujui S&K",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
             }
-            val jk = when (rgJK.checkedRadioButtonId){
+
+            val selectedKota = spKota.selectedItem.toString()
+            if (selectedKota == "Pilih Kota") {
+                Toast.makeText(
+                    this, "Silakan pilih Kota Asal Anda",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            val jk = when (rgJk.checkedRadioButtonId) {
                 R.id.rbLaki -> "Laki-Laki"
                 R.id.rbPerempuan -> "Perempuan"
                 else -> "Belum Dipilih"
             }
 
-            val data = "Nama : ${edtNama.text}" +
+            // Save entry into RegistrationRepository
+            RegistrationRepository.addRegistration(nama, jk, selectedKota)
+
+            val data = "Nama : $nama" +
                     "\nJenis Kelamin : $jk" +
-                    "\nKota : ${spKota.selectedItem}"
+                    "\nKota : $selectedKota"
 
             val intent = Intent(this, DuaActivity::class.java)
             intent.putExtra("DATA_HASIL", data)
